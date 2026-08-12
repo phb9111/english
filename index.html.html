@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#132229">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="딕테이션">
+<title>구간 딕테이션</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+
+<style>
+  :root{
+    --bg:#132229; --panel:#1B2F38; --panel-2:#22404B; --line:#2C4753;
+    --text:#E6EDEC; --dim:#8FA6AE; --brass:#D9A441; --mint:#74C2A8; --rose:#D98C7A;
+    --r:3px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg);}
+  body{
+    color:var(--text); font-family:'Pretendard',system-ui,sans-serif;
+    font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+    padding:max(22px,env(safe-area-inset-top)) 18px calc(40px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:680px;margin:0 auto;}
+  .mono{font-family:'JetBrains Mono',ui-monospace,monospace;}
+  .hidden{display:none !important;}
+
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--brass);margin:0 0 8px;
+  }
+  h1{
+    font-family:'Bricolage Grotesque','Pretendard',sans-serif;font-weight:800;
+    font-size:clamp(24px,6.5vw,34px);line-height:1.1;letter-spacing:-.02em;margin:0 0 6px;
+  }
+  .sub{color:var(--dim);font-size:13px;margin:0 0 24px;}
+
+  button{font-family:'Pretendard',sans-serif;cursor:pointer;}
+  .ctl{
+    font-size:13.5px;background:var(--panel);color:var(--text);border:1px solid var(--line);
+    border-radius:var(--r);padding:11px 15px;transition:border-color .15s,background .15s;
+  }
+  .ctl:active{background:var(--panel-2);}
+  .ctl.on{background:var(--mint);color:#132229;border-color:var(--mint);font-weight:600;}
+  .ctl.big{font-size:15.5px;padding:14px 0;font-weight:600;flex:1;}
+  .ctl:disabled{opacity:.4;}
+  .ctl:focus-visible{outline:2px solid var(--mint);outline-offset:1px;}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .spacer{flex:1;}
+
+  /* ---------- library ---------- */
+  .add{
+    width:100%;border:1px dashed var(--line);border-radius:var(--r);background:var(--panel);
+    color:var(--text);padding:22px 16px;text-align:center;font-size:14px;
+  }
+  .add:active{border-color:var(--mint);}
+  .add span{display:block;color:var(--dim);font-size:12px;margin-top:3px;}
+  input[type=file]{display:none;}
+
+  .list{margin-top:18px;display:flex;flex-direction:column;gap:1px;background:var(--line);
+        border-radius:var(--r);overflow:hidden;}
+  .row{
+    display:flex;align-items:center;gap:13px;background:var(--panel);
+    padding:15px 14px;border:none;width:100%;text-align:left;color:var(--text);
+  }
+  .row:active{background:var(--panel-2);}
+  .row .day{
+    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--brass);
+    flex:0 0 auto;letter-spacing:.04em;
+  }
+  .row .nm{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .row .st{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--dim);flex:0 0 auto;}
+  .row .st.none{color:var(--rose);}
+
+  .empty{color:var(--dim);font-size:13px;text-align:center;padding:34px 10px;}
+
+  /* ---------- episode ---------- */
+  .back{
+    background:none;border:none;color:var(--dim);font-size:13px;padding:0 0 14px;
+    font-family:'JetBrains Mono',monospace;letter-spacing:.06em;
+  }
+  .back:active{color:var(--text);}
+
+  .strip-label{
+    display:flex;justify-content:space-between;align-items:baseline;
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--dim);margin:22px 0 8px;
+  }
+  .strip{display:flex;width:100%;height:52px;gap:2px;background:var(--line);border-radius:var(--r);overflow:hidden;}
+  .seg{
+    border:none;padding:0;background:var(--panel-2);color:var(--dim);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+    font-family:'JetBrains Mono',monospace;font-size:9.5px;min-width:0;
+  }
+  .seg .d{font-size:12.5px;font-weight:600;}
+  .seg.passive{background:#182C34;color:#5E7A84;}
+  .seg.on{background:var(--brass);color:#132229;}
+  .seg:focus-visible{outline:2px solid var(--mint);outline-offset:-2px;}
+
+  .track{position:relative;height:6px;background:var(--line);border-radius:3px;margin-top:10px;}
+  .track .fill{position:absolute;left:0;top:0;bottom:0;background:var(--mint);border-radius:3px;width:0;}
+  .track .bounds{position:absolute;top:-3px;bottom:-3px;border-left:1px solid var(--brass);border-right:1px solid var(--brass);pointer-events:none;}
+  .clock{display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#63838D;margin-top:6px;}
+
+  .now{margin:24px 0 4px;display:flex;align-items:baseline;gap:11px;flex-wrap:wrap;}
+  .now h2{font-family:'Bricolage Grotesque','Pretendard',sans-serif;font-size:20px;font-weight:600;margin:0;}
+  .range{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--brass);}
+  .note{color:var(--dim);font-size:12.5px;margin:0 0 14px;min-height:20px;}
+
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px;}
+  .chip{
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--r);
+    padding:9px 13px;font-size:13px;color:var(--text);
+  }
+  .chip.on{background:var(--brass);color:#132229;border-color:var(--brass);font-weight:600;}
+  .chip.passive{color:var(--dim);}
+
+  /* ---------- panels ---------- */
+  details{margin-top:26px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);}
+  summary{cursor:pointer;padding:13px 15px;font-size:13px;color:var(--dim);list-style:none;}
+  summary::-webkit-details-marker{display:none;}
+  summary::before{content:"+ ";color:var(--brass);}
+  details[open] summary::before{content:"– ";}
+  summary:focus-visible{outline:2px solid var(--mint);outline-offset:-2px;}
+  .panel-body{padding:2px 15px 16px;border-top:1px solid var(--line);}
+
+  textarea.f{
+    width:100%;background:#122229;border:1px solid var(--line);color:var(--text);
+    border-radius:var(--r);padding:10px 11px;font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;line-height:1.8;min-height:120px;resize:vertical;margin-top:12px;
+  }
+  textarea.f:focus{outline:none;border-color:var(--mint);}
+  .hint{font-size:12px;color:var(--dim);margin:8px 0 0;}
+  .hint code{background:#122229;padding:1px 5px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:11.5px;}
+  .msg{font-size:12.5px;margin-top:11px;min-height:18px;}
+  .msg.ok{color:var(--mint);} .msg.bad{color:var(--rose);}
+
+  .keys{margin-top:14px;font-size:11.5px;color:#5E7A84;font-family:'JetBrains Mono',monospace;}
+  .danger{color:var(--rose);border-color:#4A3230;}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none !important;}}
+</style>
+
+<div class="wrap">
+
+  <!-- ============ LIBRARY ============ -->
+  <section id="viewLib">
+    <p class="eyebrow">구간 딕테이션</p>
+    <h1>라이브러리</h1>
+    <p class="sub">오디오를 한 번 넣어두면 이 기기에 남습니다. 데이터도, 파일 찾기도 다시 필요 없습니다.</p>
+
+    <button class="add" id="btnAdd">오디오 추가<span>mp3 · m4a · wav · 여러 개 한꺼번에 가능</span></button>
+    <input type="file" id="file" accept="audio/*" multiple>
+
+    <div class="list" id="list"></div>
+    <p class="empty" id="empty">아직 없습니다. 받아둔 MP3를 넣어보세요.</p>
+  </section>
+
+  <!-- ============ EPISODE ============ -->
+  <section id="viewEp" class="hidden">
+    <button class="back" id="btnBack">← 라이브러리</button>
+    <p class="eyebrow" id="epDay">DAY001</p>
+    <h1 id="epName">—</h1>
+
+    <div class="strip-label"><span>에피소드 전체</span><span id="epDur" class="mono">—</span></div>
+    <div class="strip" id="strip"></div>
+    <div class="track" id="track"><div class="fill" id="fill"></div><div class="bounds" id="bounds"></div></div>
+    <div class="clock"><span id="tNow">0:00</span><span id="tEnd">—</span></div>
+
+    <div class="chips" id="chips"></div>
+
+    <div class="now"><h2 id="nowTitle">—</h2><span class="range mono" id="nowRange"></span></div>
+    <p class="note" id="nowNote"></p>
+
+    <div class="bar">
+      <button class="ctl big" id="btnPlay">재생</button>
+    </div>
+    <div class="bar">
+      <button class="ctl" id="btnBack5">◀ 5초</button>
+      <button class="ctl" id="btnFwd5">5초 ▶</button>
+      <button class="ctl" id="btnHead">구간 처음</button>
+      <button class="ctl" id="btnLoop">반복 끄기</button>
+      <span class="spacer"></span>
+      <button class="ctl" id="btnSlow">0.75×</button>
+      <button class="ctl on" id="btnNormal">1.0×</button>
+    </div>
+    <p class="keys">스페이스 재생·정지 · ← → 5초 · R 구간 처음 · L 반복</p>
+
+    <details id="segPanel">
+      <summary>구간 설정</summary>
+      <div class="panel-body">
+        <textarea class="f" id="inSegs" placeholder="인트로, 0:00, 0:17, 다청&#10;화, 0:17, 1:03&#10;수, 1:03, 2:03"></textarea>
+        <p class="hint">
+          <code>이름, 시작, 끝</code> 순서. 줄바꿈 없이 쉼표로만 쭉 이어 붙여도 읽습니다.
+          끝 자리에 <code>끝</code>이라고 쓰면 파일 끝까지. 네 번째 칸에 아무 글자나 넣으면 딕테이션 대상이 아닌 구간으로 흐리게 표시됩니다.
+        </p>
+        <div class="bar">
+          <button class="ctl" id="btnApply">적용</button>
+        </div>
+        <p class="msg" id="msg"></p>
+      </div>
+    </details>
+
+    <details>
+      <summary>이 회차 지우기</summary>
+      <div class="panel-body">
+        <p class="hint" style="margin-top:12px">오디오와 구간 설정이 함께 지워집니다. 되돌릴 수 없습니다.</p>
+        <div class="bar"><button class="ctl danger" id="btnDelete">지우기</button></div>
+      </div>
+    </details>
+  </section>
+
+</div>
+
+<audio id="audio" preload="metadata"></audio>
+
+<script>
+(function(){
+  "use strict";
+
+  var $ = function(id){ return document.getElementById(id); };
+  var audio = $("audio");
+
+  var DB = null, eps = [], cur = null, segs = [], si = -1;
+  var looping = false, url = null;
+
+  /* ================= storage ================= */
+
+  function open(){
+    return new Promise(function(res, rej){
+      var rq = indexedDB.open("dictation", 1);
+      rq.onupgradeneeded = function(){
+        rq.result.createObjectStore("eps", { keyPath:"id", autoIncrement:true });
+      };
+      rq.onsuccess = function(){ res(rq.result); };
+      rq.onerror = function(){ rej(rq.error); };
+    });
+  }
+  function tx(mode, fn){
+    return new Promise(function(res, rej){
+      var t = DB.transaction("eps", mode), st = t.objectStore("eps"), out;
+      out = fn(st);
+      t.oncomplete = function(){ res(out && out.result !== undefined ? out.result : out); };
+      t.onerror = function(){ rej(t.error); };
+    });
+  }
+  var all    = function(){ return tx("readonly",  function(s){ return s.getAll(); }); };
+  var put    = function(o){ return tx("readwrite", function(s){ return s.put(o); }); };
+  var remove = function(id){ return tx("readwrite", function(s){ return s.delete(id); }); };
+
+  /* ================= helpers ================= */
+
+  function fmt(s){
+    if(!isFinite(s)) return "—";
+    s = Math.max(0, Math.floor(s));
+    var m = Math.floor(s/60), r = s%60;
+    return m + ":" + (r<10?"0":"") + r;
+  }
+  function pad(n){ return "DAY" + String(n).padStart(3,"0"); }
+  function stripExt(n){ return n.replace(/\.[^.]+$/,""); }
+
+  function parseTime(raw, dur){
+    raw = String(raw).trim();
+    if(/^(끝|end|eof)$/i.test(raw)) return dur || null;
+    if(raw.indexOf(":") === -1){
+      var n = parseFloat(raw);
+      return isNaN(n) ? null : n;
+    }
+    var p = raw.split(":").map(function(x){ return parseInt(x,10); });
+    if(p.some(isNaN)) return null;
+    if(p.length === 2) return p[0]*60 + p[1];
+    if(p.length === 3) return p[0]*3600 + p[1]*60 + p[2];
+    return null;
+  }
+
+  var PASSIVE = /인트로|리캡|아웃트로|intro|recap|outro|다청/i;
+
+  function parseSegs(text, dur){
+    var lines = text.split("\n").map(function(l){ return l.trim(); }).filter(Boolean);
+    var out = [], i;
+
+    // line mode — each line is one segment, 4th field marks passive
+    if(lines.length > 1){
+      for(i=0;i<lines.length;i++){
+        var p = lines[i].split(",").map(function(x){ return x.trim(); });
+        if(p.length < 3) return { err:(i+1)+"번째 줄에 이름·시작·끝이 다 있는지 확인해 주세요." };
+        var a = parseTime(p[1], dur), b = parseTime(p[2], dur);
+        if(a === null || b === null || b <= a) return { err:(i+1)+"번째 줄의 시간을 읽지 못했습니다." };
+        out.push({ label:p[0], start:a, end:b, passive: !!p[3] || PASSIVE.test(p[0]) });
+      }
+    } else {
+      // flat mode — comma stream in groups of three
+      var tk = text.split(",").map(function(x){ return x.trim(); }).filter(Boolean);
+      if(tk.length % 3 !== 0) return { err:"이름·시작·끝 세 칸씩 떨어지지 않습니다. 칸 수를 확인해 주세요." };
+      for(i=0;i<tk.length;i+=3){
+        var s = parseTime(tk[i+1], dur), e = parseTime(tk[i+2], dur);
+        if(s === null || e === null || e <= s) return { err:"“"+tk[i]+"” 구간의 시간을 읽지 못했습니다." };
+        out.push({ label:tk[i], start:s, end:e, passive: PASSIVE.test(tk[i]) });
+      }
+    }
+    out.sort(function(x,y){ return x.start - y.start; });
+    return { segs: out };
+  }
+
+  /* ================= library ================= */
+
+  function renderLib(){
+    var box = $("list");
+    box.innerHTML = "";
+    $("empty").classList.toggle("hidden", eps.length > 0);
+
+    eps.forEach(function(e){
+      var b = document.createElement("button");
+      b.className = "row";
+      var n = (e.segs && e.segs.length) || 0;
+
+      var d = document.createElement("span");
+      d.className = "day"; d.textContent = pad(e.day);
+      var nm = document.createElement("span");
+      nm.className = "nm"; nm.textContent = stripExt(e.name);
+      var st = document.createElement("span");
+      st.className = "st" + (n ? "" : " none");
+      st.textContent = n ? n + "구간" : "구간 없음";
+
+      b.appendChild(d); b.appendChild(nm); b.appendChild(st);
+      b.addEventListener("click", function(){ openEp(e); });
+      box.appendChild(b);
+    });
+  }
+
+  $("btnAdd").addEventListener("click", function(){ $("file").click(); });
+
+  $("file").addEventListener("change", async function(ev){
+    var files = Array.from(ev.target.files || []);
+    ev.target.value = "";
+    if(!files.length) return;
+    var next = eps.reduce(function(mx,e){ return Math.max(mx, e.day); }, 0);
+    for(var i=0;i<files.length;i++){
+      next += 1;
+      await put({ day:next, name:files[i].name, blob:files[i], csv:"", segs:[] });
+    }
+    eps = await all();
+    eps.sort(function(a,b){ return a.day - b.day; });
+    renderLib();
+  });
+
+  /* ================= episode ================= */
+
+  function openEp(e){
+    cur = e;
+    segs = e.segs || [];
+    si = -1;
+    if(url) URL.revokeObjectURL(url);
+    url = URL.createObjectURL(e.blob);
+    audio.src = url;
+    audio.load();
+
+    $("epDay").textContent = pad(e.day);
+    $("epName").textContent = stripExt(e.name);
+    $("inSegs").value = e.csv || "";
+    $("segPanel").open = segs.length === 0;
+    $("msg").textContent = "";
+
+    $("viewLib").classList.add("hidden");
+    $("viewEp").classList.remove("hidden");
+    window.scrollTo(0,0);
+
+    draw();
+    if(segs.length) pick(firstActive(), false);
+    else { $("nowTitle").textContent = "구간을 설정하세요"; $("nowRange").textContent = ""; $("nowNote").textContent = "아래 구간 설정에 붙여넣고 적용을 누르세요."; }
+  }
+
+  function firstActive(){
+    var i = segs.findIndex(function(s){ return !s.passive; });
+    return i === -1 ? 0 : i;
+  }
+
+  function span(){
+    return audio.duration || segs.reduce(function(mx,s){ return Math.max(mx,s.end); }, 0);
+  }
+
+  function draw(){
+    var strip = $("strip"), chips = $("chips"), dur = span() || 1;
+    strip.innerHTML = ""; chips.innerHTML = "";
+
+    segs.forEach(function(s,i){
+      var b = document.createElement("button");
+      b.className = "seg" + (s.passive?" passive":"") + (i===si?" on":"");
+      b.style.width = ((s.end-s.start)/dur*100) + "%";
+      b.title = s.label + " " + fmt(s.start) + "–" + fmt(s.end);
+      var d = document.createElement("span"); d.className="d"; d.textContent = s.label;
+      var t = document.createElement("span"); t.textContent = fmt(s.end-s.start);
+      b.appendChild(d); b.appendChild(t);
+      b.addEventListener("click", function(){ pick(i, true); });
+      strip.appendChild(b);
+
+      var c = document.createElement("button");
+      c.className = "chip" + (s.passive?" passive":"") + (i===si?" on":"");
+      c.textContent = s.label;
+      c.addEventListener("click", function(){ pick(i, true); });
+      chips.appendChild(c);
+    });
+
+    $("epDur").textContent = fmt(dur);
+    $("tEnd").textContent = fmt(dur);
+    bounds();
+  }
+
+  function bounds(){
+    var el = $("bounds"), dur = span();
+    if(si < 0 || !dur){ el.style.display = "none"; return; }
+    el.style.display = "block";
+    el.style.left  = (segs[si].start/dur*100) + "%";
+    el.style.width = ((segs[si].end-segs[si].start)/dur*100) + "%";
+  }
+
+  function pick(i, play){
+    si = i;
+    var s = segs[i];
+    $("nowTitle").textContent = s.label;
+    $("nowRange").textContent = fmt(s.start)+" – "+fmt(s.end)+"  ("+fmt(s.end-s.start)+")";
+    $("nowNote").textContent = s.passive ? "딕테이션 대상이 아닌 구간입니다." : "";
+    draw();
+    audio.currentTime = s.start;
+    if(play) audio.play().catch(function(){});
+  }
+
+  $("btnBack").addEventListener("click", function(){
+    audio.pause();
+    $("viewEp").classList.add("hidden");
+    $("viewLib").classList.remove("hidden");
+    renderLib();
+    window.scrollTo(0,0);
+  });
+
+  /* ================= playback ================= */
+
+  audio.addEventListener("loadedmetadata", function(){ draw(); });
+
+  audio.addEventListener("timeupdate", function(){
+    var dur = span();
+    $("tNow").textContent = fmt(audio.currentTime);
+    $("fill").style.width = (audio.currentTime/dur*100) + "%";
+    if(si < 0) return;
+    var s = segs[si];
+    if(audio.currentTime >= s.end){
+      if(looping) audio.currentTime = s.start;
+      else { audio.pause(); audio.currentTime = s.start; }
+    }
+  });
+
+  audio.addEventListener("play",  function(){ $("btnPlay").textContent = "일시정지"; });
+  audio.addEventListener("pause", function(){ $("btnPlay").textContent = "재생"; });
+
+  function toggle(){
+    if(!audio.src || si < 0) return;
+    if(audio.paused){
+      var s = segs[si];
+      if(audio.currentTime < s.start - 0.5 || audio.currentTime >= s.end - 0.05) audio.currentTime = s.start;
+      audio.play().catch(function(){});
+    } else audio.pause();
+  }
+  function nudge(d){
+    if(si < 0) return;
+    var s = segs[si];
+    audio.currentTime = Math.min(s.end - 0.1, Math.max(s.start, audio.currentTime + d));
+  }
+  function head(){
+    if(si < 0) return;
+    audio.currentTime = segs[si].start;
+    audio.play().catch(function(){});
+  }
+  function loop(){
+    looping = !looping;
+    var b = $("btnLoop");
+    b.classList.toggle("on", looping);
+    b.textContent = looping ? "반복 켜짐" : "반복 끄기";
+  }
+
+  $("btnPlay").addEventListener("click", toggle);
+  $("btnBack5").addEventListener("click", function(){ nudge(-5); });
+  $("btnFwd5").addEventListener("click", function(){ nudge(5); });
+  $("btnHead").addEventListener("click", head);
+  $("btnLoop").addEventListener("click", loop);
+
+  function rate(r){
+    audio.playbackRate = r;
+    $("btnSlow").classList.toggle("on", r === 0.75);
+    $("btnNormal").classList.toggle("on", r === 1);
+  }
+  $("btnSlow").addEventListener("click", function(){ rate(0.75); });
+  $("btnNormal").addEventListener("click", function(){ rate(1); });
+
+  $("track").addEventListener("click", function(e){
+    if(!audio.duration) return;
+    var r = this.getBoundingClientRect();
+    var t = (e.clientX - r.left)/r.width * audio.duration;
+    var hit = segs.findIndex(function(s){ return t >= s.start && t < s.end; });
+    if(hit !== -1 && hit !== si) pick(hit, false);
+    audio.currentTime = t;
+  });
+
+  document.addEventListener("keydown", function(e){
+    if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    if($("viewEp").classList.contains("hidden")) return;
+    if(e.key === " "){ e.preventDefault(); toggle(); }
+    else if(e.key === "ArrowLeft"){ e.preventDefault(); nudge(-5); }
+    else if(e.key === "ArrowRight"){ e.preventDefault(); nudge(5); }
+    else if(e.key === "r" || e.key === "R") head();
+    else if(e.key === "l" || e.key === "L") loop();
+  });
+
+  /* ================= segment editing ================= */
+
+  function say(t, ok){
+    var m = $("msg"); m.textContent = t; m.className = "msg " + (ok?"ok":"bad");
+  }
+
+  $("btnApply").addEventListener("click", async function(){
+    var text = $("inSegs").value.trim();
+    if(!text){ say("구간을 붙여넣어 주세요.", false); return; }
+    var r = parseSegs(text, audio.duration);
+    if(r.err){ say(r.err, false); return; }
+
+    segs = r.segs;
+    cur.segs = segs; cur.csv = text;
+    try { await put(cur); } catch(err){ say("저장하지 못했습니다. 이번 세션에서는 그대로 쓸 수 있습니다.", false); }
+
+    si = -1;
+    pick(firstActive(), false);
+    say(segs.length + "개 구간으로 나눴습니다.", true);
+  });
+
+  $("btnDelete").addEventListener("click", async function(){
+    audio.pause();
+    await remove(cur.id);
+    eps = await all();
+    eps.sort(function(a,b){ return a.day - b.day; });
+    $("viewEp").classList.add("hidden");
+    $("viewLib").classList.remove("hidden");
+    renderLib();
+    window.scrollTo(0,0);
+  });
+
+  /* ================= boot ================= */
+
+  (async function(){
+    try {
+      DB = await open();
+      eps = await all();
+      eps.sort(function(a,b){ return a.day - b.day; });
+      renderLib();
+    } catch(err){
+      $("empty").textContent = "이 브라우저에서는 저장 기능을 쓸 수 없습니다. 파일은 열리지만 다음에 다시 넣어야 합니다.";
+    }
+  })();
+
+})();
+</script>
