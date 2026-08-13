@@ -7,6 +7,15 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="딕테이션">
 <title>구간 딕테이션</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -52,7 +61,6 @@
   .bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
   .spacer{flex:1;}
 
-  /* ---------- library ---------- */
   .add{
     width:100%;border:1px dashed var(--line);border-radius:var(--r);background:var(--panel);
     color:var(--text);padding:22px 16px;text-align:center;font-size:14px;
@@ -68,17 +76,12 @@
     padding:15px 14px;border:none;width:100%;text-align:left;color:var(--text);
   }
   .row:active{background:var(--panel-2);}
-  .row .day{
-    font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--brass);
-    flex:0 0 auto;letter-spacing:.04em;
-  }
+  .row .day{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--brass);letter-spacing:.04em;}
   .row .nm{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .row .st{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--dim);flex:0 0 auto;}
+  .row .st{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--dim);}
   .row .st.none{color:var(--rose);}
-
   .empty{color:var(--dim);font-size:13px;text-align:center;padding:34px 10px;}
 
-  /* ---------- episode ---------- */
   .back{
     background:none;border:none;color:var(--dim);font-size:13px;padding:0 0 14px;
     font-family:'JetBrains Mono',monospace;letter-spacing:.06em;
@@ -119,7 +122,35 @@
   .chip.on{background:var(--brass);color:#132229;border-color:var(--brass);font-weight:600;}
   .chip.passive{color:var(--dim);}
 
-  /* ---------- panels ---------- */
+  /* ---- script ---- */
+  .script-head{
+    display:flex;align-items:center;gap:10px;margin-top:30px;
+    border-top:1px solid var(--line);padding-top:20px;
+  }
+  .script-head h3{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--dim);font-weight:400;margin:0;flex:1;
+  }
+  .curtain{
+    margin-top:12px;border:1px dashed var(--line);border-radius:var(--r);
+    padding:22px 18px;text-align:center;
+  }
+  .curtain p{margin:0 0 14px;color:var(--dim);font-size:13px;}
+  .lines{margin-top:12px;display:flex;flex-direction:column;gap:1px;
+         background:var(--line);border-radius:var(--r);overflow:hidden;}
+  .ln{
+    display:flex;gap:12px;align-items:flex-start;background:var(--panel);
+    border:none;width:100%;text-align:left;color:var(--text);padding:11px 13px;
+    font-size:14px;line-height:1.55;
+  }
+  .ln:active{background:var(--panel-2);}
+  .ln.at{background:var(--panel-2);border-left:2px solid var(--brass);}
+  .ln .tm{
+    font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--brass);
+    flex:0 0 34px;padding-top:4px;
+  }
+  .ln .tx{flex:1;}
+
   details{margin-top:26px;border:1px solid var(--line);border-radius:var(--r);background:var(--panel);}
   summary{cursor:pointer;padding:13px 15px;font-size:13px;color:var(--dim);list-style:none;}
   summary::-webkit-details-marker{display:none;}
@@ -138,7 +169,6 @@
   .hint code{background:#122229;padding:1px 5px;border-radius:2px;font-family:'JetBrains Mono',monospace;font-size:11.5px;}
   .msg{font-size:12.5px;margin-top:11px;min-height:18px;}
   .msg.ok{color:var(--mint);} .msg.bad{color:var(--rose);}
-
   .keys{margin-top:14px;font-size:11.5px;color:#5E7A84;font-family:'JetBrains Mono',monospace;}
   .danger{color:var(--rose);border-color:#4A3230;}
 
@@ -151,7 +181,7 @@
   <section id="viewLib">
     <p class="eyebrow">구간 딕테이션</p>
     <h1>라이브러리</h1>
-    <p class="sub">오디오를 한 번 넣어두면 이 기기에 남습니다. 데이터도, 파일 찾기도 다시 필요 없습니다.</p>
+    <p class="sub">오디오를 한 번 넣어두면 이 기기에 남습니다.</p>
 
     <button class="add" id="btnAdd">오디오 추가<span>mp3 · m4a · wav · 여러 개 한꺼번에 가능</span></button>
     <input type="file" id="file" accept="audio/*" multiple>
@@ -176,9 +206,7 @@
     <div class="now"><h2 id="nowTitle">—</h2><span class="range mono" id="nowRange"></span></div>
     <p class="note" id="nowNote"></p>
 
-    <div class="bar">
-      <button class="ctl big" id="btnPlay">재생</button>
-    </div>
+    <div class="bar"><button class="ctl big" id="btnPlay">재생</button></div>
     <div class="bar">
       <button class="ctl" id="btnBack5">◀ 5초</button>
       <button class="ctl" id="btnFwd5">5초 ▶</button>
@@ -190,25 +218,44 @@
     </div>
     <p class="keys">스페이스 재생·정지 · ← → 5초 · R 구간 처음 · L 반복</p>
 
+    <!-- script -->
+    <div class="script-head">
+      <h3>스크립트</h3>
+      <button class="ctl" id="btnHide" style="display:none">감추기</button>
+    </div>
+    <div class="curtain" id="curtain">
+      <p id="curtainMsg">딕테이션을 끝낸 뒤에 여세요.</p>
+      <button class="ctl" id="btnReveal">스크립트 보기</button>
+    </div>
+    <div class="lines hidden" id="lines"></div>
+
     <details id="segPanel">
       <summary>구간 설정</summary>
       <div class="panel-body">
-        <textarea class="f" id="inSegs" placeholder="인트로, 0:00, 0:17, 다청&#10;화, 0:17, 1:03&#10;수, 1:03, 2:03"></textarea>
+        <textarea class="f" id="inSegs" placeholder="월, 0:00, 끝, 다청&#10;인트로, 0:00, 0:18, 다청&#10;화, 0:18, 2:22&#10;수, 2:22, 4:33"></textarea>
         <p class="hint">
-          <code>이름, 시작, 끝</code> 순서. 줄바꿈 없이 쉼표로만 쭉 이어 붙여도 읽습니다.
-          끝 자리에 <code>끝</code>이라고 쓰면 파일 끝까지. 네 번째 칸에 아무 글자나 넣으면 딕테이션 대상이 아닌 구간으로 흐리게 표시됩니다.
+          <code>이름, 시작, 끝</code> 순서. 끝 자리에 <code>끝</code>이라고 쓰면 파일 끝까지.
+          네 번째 칸에 아무 글자나 넣으면 딕테이션 대상이 아닌 구간으로 흐리게 표시됩니다.
         </p>
-        <div class="bar">
-          <button class="ctl" id="btnApply">적용</button>
-        </div>
+        <div class="bar"><button class="ctl" id="btnApply">적용</button></div>
         <p class="msg" id="msg"></p>
+      </div>
+    </details>
+
+    <details id="scrPanel">
+      <summary>스크립트 넣기</summary>
+      <div class="panel-body">
+        <textarea class="f" id="inScript" placeholder="0:18&#10;Hello Neil. How are you doing?&#10;0:20&#10;I'm very well, thank you, Georgie."></textarea>
+        <p class="hint">유튜브 자막을 그대로 붙여넣으세요. 시간 줄과 대사 줄이 번갈아 나오는 형식이면 됩니다. Introduction 같은 제목 줄은 알아서 걸러집니다.</p>
+        <div class="bar"><button class="ctl" id="btnScript">저장</button></div>
+        <p class="msg" id="msgScr"></p>
       </div>
     </details>
 
     <details>
       <summary>이 회차 지우기</summary>
       <div class="panel-body">
-        <p class="hint" style="margin-top:12px">오디오와 구간 설정이 함께 지워집니다. 되돌릴 수 없습니다.</p>
+        <p class="hint" style="margin-top:12px">오디오·구간·스크립트가 함께 지워집니다. 되돌릴 수 없습니다.</p>
         <div class="bar"><button class="ctl danger" id="btnDelete">지우기</button></div>
       </div>
     </details>
@@ -225,337 +272,391 @@
   var $ = function(id){ return document.getElementById(id); };
   var audio = $("audio");
 
-  var DB = null, eps = [], cur = null, segs = [], si = -1;
-  var looping = false, url = null;
+  var DB=null, eps=[], cur=null, segs=[], si=-1, script=[];
+  var looping=false, url=null, shown=false;
 
-  /* ================= storage ================= */
-
+  /* ============ storage ============ */
   function open(){
-    return new Promise(function(res, rej){
-      var rq = indexedDB.open("dictation", 1);
-      rq.onupgradeneeded = function(){
-        rq.result.createObjectStore("eps", { keyPath:"id", autoIncrement:true });
-      };
+    return new Promise(function(res,rej){
+      var rq = indexedDB.open("dictation",1);
+      rq.onupgradeneeded = function(){ rq.result.createObjectStore("eps",{keyPath:"id",autoIncrement:true}); };
       rq.onsuccess = function(){ res(rq.result); };
-      rq.onerror = function(){ rej(rq.error); };
+      rq.onerror   = function(){ rej(rq.error); };
     });
   }
   function tx(mode, fn){
-    return new Promise(function(res, rej){
-      var t = DB.transaction("eps", mode), st = t.objectStore("eps"), out;
-      out = fn(st);
-      t.oncomplete = function(){ res(out && out.result !== undefined ? out.result : out); };
-      t.onerror = function(){ rej(t.error); };
+    return new Promise(function(res,rej){
+      var t=DB.transaction("eps",mode), st=t.objectStore("eps"), out=fn(st);
+      t.oncomplete=function(){ res(out && out.result!==undefined ? out.result : out); };
+      t.onerror   =function(){ rej(t.error); };
     });
   }
-  var all    = function(){ return tx("readonly",  function(s){ return s.getAll(); }); };
-  var put    = function(o){ return tx("readwrite", function(s){ return s.put(o); }); };
-  var remove = function(id){ return tx("readwrite", function(s){ return s.delete(id); }); };
+  var all    = function(){ return tx("readonly", function(s){ return s.getAll(); }); };
+  var put    = function(o){ return tx("readwrite",function(s){ return s.put(o); }); };
+  var remove = function(id){ return tx("readwrite",function(s){ return s.delete(id); }); };
 
-  /* ================= helpers ================= */
-
+  /* ============ helpers ============ */
   function fmt(s){
     if(!isFinite(s)) return "—";
-    s = Math.max(0, Math.floor(s));
-    var m = Math.floor(s/60), r = s%60;
-    return m + ":" + (r<10?"0":"") + r;
+    s=Math.max(0,Math.floor(s));
+    var m=Math.floor(s/60), r=s%60;
+    return m+":"+(r<10?"0":"")+r;
   }
-  function pad(n){ return "DAY" + String(n).padStart(3,"0"); }
-  function stripExt(n){ return n.replace(/\.[^.]+$/,""); }
+  var pad = function(n){ return "DAY"+String(n).padStart(3,"0"); };
+  var stripExt = function(n){ return n.replace(/\.[^.]+$/,""); };
 
-  function parseTime(raw, dur){
-    raw = String(raw).trim();
-    if(/^(끝|end|eof)$/i.test(raw)) return dur || null;
-    if(raw.indexOf(":") === -1){
-      var n = parseFloat(raw);
-      return isNaN(n) ? null : n;
-    }
-    var p = raw.split(":").map(function(x){ return parseInt(x,10); });
+  function parseTime(raw,dur){
+    raw=String(raw).trim();
+    if(/^(끝|end|eof)$/i.test(raw)) return dur||null;
+    if(raw.indexOf(":")===-1){ var n=parseFloat(raw); return isNaN(n)?null:n; }
+    var p=raw.split(":").map(function(x){ return parseInt(x,10); });
     if(p.some(isNaN)) return null;
-    if(p.length === 2) return p[0]*60 + p[1];
-    if(p.length === 3) return p[0]*3600 + p[1]*60 + p[2];
+    if(p.length===2) return p[0]*60+p[1];
+    if(p.length===3) return p[0]*3600+p[1]*60+p[2];
     return null;
   }
 
-  var PASSIVE = /인트로|리캡|아웃트로|intro|recap|outro|다청/i;
+  var PASSIVE=/인트로|리캡|아웃트로|intro|recap|outro|다청|월/i;
+  var TIMELINE=/^\d{1,2}:\d{2}(:\d{2})?$/;
 
-  function parseSegs(text, dur){
-    var lines = text.split("\n").map(function(l){ return l.trim(); }).filter(Boolean);
-    var out = [], i;
-
-    // line mode — each line is one segment, 4th field marks passive
-    if(lines.length > 1){
+  function parseSegs(text,dur){
+    var lines=text.split("\n").map(function(l){return l.trim();}).filter(Boolean);
+    var out=[],i;
+    if(lines.length>1){
       for(i=0;i<lines.length;i++){
-        var p = lines[i].split(",").map(function(x){ return x.trim(); });
-        if(p.length < 3) return { err:(i+1)+"번째 줄에 이름·시작·끝이 다 있는지 확인해 주세요." };
-        var a = parseTime(p[1], dur), b = parseTime(p[2], dur);
-        if(a === null || b === null || b <= a) return { err:(i+1)+"번째 줄의 시간을 읽지 못했습니다." };
-        out.push({ label:p[0], start:a, end:b, passive: !!p[3] || PASSIVE.test(p[0]) });
+        var p=lines[i].split(",").map(function(x){return x.trim();});
+        if(p.length<3) return {err:(i+1)+"번째 줄에 이름·시작·끝이 다 있는지 확인해 주세요."};
+        var a=parseTime(p[1],dur), b=parseTime(p[2],dur);
+        if(a===null||b===null||b<=a) return {err:(i+1)+"번째 줄의 시간을 읽지 못했습니다."};
+        out.push({label:p[0],start:a,end:b,passive:!!p[3]||PASSIVE.test(p[0])});
       }
     } else {
-      // flat mode — comma stream in groups of three
-      var tk = text.split(",").map(function(x){ return x.trim(); }).filter(Boolean);
-      if(tk.length % 3 !== 0) return { err:"이름·시작·끝 세 칸씩 떨어지지 않습니다. 칸 수를 확인해 주세요." };
+      var tk=text.split(",").map(function(x){return x.trim();}).filter(Boolean);
+      if(tk.length%3!==0) return {err:"이름·시작·끝 세 칸씩 떨어지지 않습니다."};
       for(i=0;i<tk.length;i+=3){
-        var s = parseTime(tk[i+1], dur), e = parseTime(tk[i+2], dur);
-        if(s === null || e === null || e <= s) return { err:"“"+tk[i]+"” 구간의 시간을 읽지 못했습니다." };
-        out.push({ label:tk[i], start:s, end:e, passive: PASSIVE.test(tk[i]) });
+        var s=parseTime(tk[i+1],dur), e=parseTime(tk[i+2],dur);
+        if(s===null||e===null||e<=s) return {err:"“"+tk[i]+"” 구간의 시간을 읽지 못했습니다."};
+        out.push({label:tk[i],start:s,end:e,passive:PASSIVE.test(tk[i])});
       }
     }
-    out.sort(function(x,y){ return x.start - y.start; });
-    return { segs: out };
+    out.sort(function(x,y){return x.start-y.start;});
+    return {segs:out};
   }
 
-  /* ================= library ================= */
+  function parseScript(text){
+    var raw=text.split("\n").map(function(l){return l.trim();});
+    var out=[], i=0;
+    while(i<raw.length){
+      if(TIMELINE.test(raw[i])){
+        var t=parseTime(raw[i]);
+        var buf=[], j=i+1;
+        while(j<raw.length && raw[j] && !TIMELINE.test(raw[j])){ buf.push(raw[j]); j++; }
+        if(buf.length) out.push({t:t, text:buf.join(" ")});
+        i=j;
+      } else i++;
+    }
+    return out;
+  }
 
+  /* ============ library ============ */
   function renderLib(){
-    var box = $("list");
-    box.innerHTML = "";
-    $("empty").classList.toggle("hidden", eps.length > 0);
-
+    var box=$("list"); box.innerHTML="";
+    $("empty").classList.toggle("hidden", eps.length>0);
     eps.forEach(function(e){
-      var b = document.createElement("button");
-      b.className = "row";
-      var n = (e.segs && e.segs.length) || 0;
-
-      var d = document.createElement("span");
-      d.className = "day"; d.textContent = pad(e.day);
-      var nm = document.createElement("span");
-      nm.className = "nm"; nm.textContent = stripExt(e.name);
-      var st = document.createElement("span");
-      st.className = "st" + (n ? "" : " none");
-      st.textContent = n ? n + "구간" : "구간 없음";
-
+      var b=document.createElement("button"); b.className="row";
+      var n=(e.segs&&e.segs.length)||0;
+      var d=document.createElement("span"); d.className="day"; d.textContent=pad(e.day);
+      var nm=document.createElement("span"); nm.className="nm"; nm.textContent=stripExt(e.name);
+      var st=document.createElement("span");
+      st.className="st"+(n?"":" none");
+      st.textContent = n ? (n+"구간"+((e.script&&e.script.length)?" · 스크립트":"")) : "구간 없음";
       b.appendChild(d); b.appendChild(nm); b.appendChild(st);
-      b.addEventListener("click", function(){ openEp(e); });
+      b.addEventListener("click",function(){ openEp(e); });
       box.appendChild(b);
     });
   }
 
-  $("btnAdd").addEventListener("click", function(){ $("file").click(); });
+  $("btnAdd").addEventListener("click",function(){ $("file").click(); });
 
   $("file").addEventListener("change", async function(ev){
-    var files = Array.from(ev.target.files || []);
-    ev.target.value = "";
+    var files=Array.from(ev.target.files||[]); ev.target.value="";
     if(!files.length) return;
-    var next = eps.reduce(function(mx,e){ return Math.max(mx, e.day); }, 0);
+    var next=eps.reduce(function(mx,e){return Math.max(mx,e.day);},0);
     for(var i=0;i<files.length;i++){
-      next += 1;
-      await put({ day:next, name:files[i].name, blob:files[i], csv:"", segs:[] });
+      next+=1;
+      await put({day:next,name:files[i].name,blob:files[i],csv:"",segs:[],scriptRaw:"",script:[]});
     }
-    eps = await all();
-    eps.sort(function(a,b){ return a.day - b.day; });
-    renderLib();
+    eps=await all(); eps.sort(function(a,b){return a.day-b.day;}); renderLib();
   });
 
-  /* ================= episode ================= */
-
+  /* ============ episode ============ */
   function openEp(e){
-    cur = e;
-    segs = e.segs || [];
-    si = -1;
+    cur=e; segs=e.segs||[]; script=e.script||[]; si=-1;
     if(url) URL.revokeObjectURL(url);
-    url = URL.createObjectURL(e.blob);
-    audio.src = url;
-    audio.load();
+    url=URL.createObjectURL(e.blob); audio.src=url; audio.load();
 
-    $("epDay").textContent = pad(e.day);
-    $("epName").textContent = stripExt(e.name);
-    $("inSegs").value = e.csv || "";
-    $("segPanel").open = segs.length === 0;
-    $("msg").textContent = "";
+    $("epDay").textContent=pad(e.day);
+    $("epName").textContent=stripExt(e.name);
+    $("inSegs").value=e.csv||"";
+    $("inScript").value=e.scriptRaw||"";
+    $("segPanel").open = segs.length===0;
+    $("scrPanel").open = false;
+    $("msg").textContent=""; $("msgScr").textContent="";
 
     $("viewLib").classList.add("hidden");
     $("viewEp").classList.remove("hidden");
     window.scrollTo(0,0);
 
     draw();
-    if(segs.length) pick(firstActive(), false);
-    else { $("nowTitle").textContent = "구간을 설정하세요"; $("nowRange").textContent = ""; $("nowNote").textContent = "아래 구간 설정에 붙여넣고 적용을 누르세요."; }
+    if(segs.length) pick(firstActive(),false);
+    else {
+      $("nowTitle").textContent="구간을 설정하세요";
+      $("nowRange").textContent="";
+      $("nowNote").textContent="아래 구간 설정에 붙여넣고 적용을 누르세요.";
+      hideScript();
+    }
   }
 
   function firstActive(){
-    var i = segs.findIndex(function(s){ return !s.passive; });
-    return i === -1 ? 0 : i;
+    var i=segs.findIndex(function(s){return !s.passive;});
+    return i===-1?0:i;
   }
-
   function span(){
-    return audio.duration || segs.reduce(function(mx,s){ return Math.max(mx,s.end); }, 0);
+    return audio.duration || segs.reduce(function(mx,s){return Math.max(mx,s.end);},0);
   }
 
   function draw(){
-    var strip = $("strip"), chips = $("chips"), dur = span() || 1;
-    strip.innerHTML = ""; chips.innerHTML = "";
-
+    var strip=$("strip"), chips=$("chips"), dur=span()||1;
+    strip.innerHTML=""; chips.innerHTML="";
     segs.forEach(function(s,i){
-      var b = document.createElement("button");
-      b.className = "seg" + (s.passive?" passive":"") + (i===si?" on":"");
-      b.style.width = ((s.end-s.start)/dur*100) + "%";
-      b.title = s.label + " " + fmt(s.start) + "–" + fmt(s.end);
-      var d = document.createElement("span"); d.className="d"; d.textContent = s.label;
-      var t = document.createElement("span"); t.textContent = fmt(s.end-s.start);
+      var b=document.createElement("button");
+      b.className="seg"+(s.passive?" passive":"")+(i===si?" on":"");
+      b.style.width=((s.end-s.start)/dur*100)+"%";
+      b.title=s.label+" "+fmt(s.start)+"–"+fmt(s.end);
+      var d=document.createElement("span"); d.className="d"; d.textContent=s.label;
+      var t=document.createElement("span"); t.textContent=fmt(s.end-s.start);
       b.appendChild(d); b.appendChild(t);
-      b.addEventListener("click", function(){ pick(i, true); });
+      b.addEventListener("click",function(){ pick(i,true); });
       strip.appendChild(b);
 
-      var c = document.createElement("button");
-      c.className = "chip" + (s.passive?" passive":"") + (i===si?" on":"");
-      c.textContent = s.label;
-      c.addEventListener("click", function(){ pick(i, true); });
+      var c=document.createElement("button");
+      c.className="chip"+(s.passive?" passive":"")+(i===si?" on":"");
+      c.textContent=s.label;
+      c.addEventListener("click",function(){ pick(i,true); });
       chips.appendChild(c);
     });
-
-    $("epDur").textContent = fmt(dur);
-    $("tEnd").textContent = fmt(dur);
+    $("epDur").textContent=fmt(dur);
+    $("tEnd").textContent=fmt(dur);
     bounds();
   }
 
   function bounds(){
-    var el = $("bounds"), dur = span();
-    if(si < 0 || !dur){ el.style.display = "none"; return; }
-    el.style.display = "block";
-    el.style.left  = (segs[si].start/dur*100) + "%";
-    el.style.width = ((segs[si].end-segs[si].start)/dur*100) + "%";
+    var el=$("bounds"), dur=span();
+    if(si<0||!dur){ el.style.display="none"; return; }
+    el.style.display="block";
+    el.style.left=(segs[si].start/dur*100)+"%";
+    el.style.width=((segs[si].end-segs[si].start)/dur*100)+"%";
   }
 
-  function pick(i, play){
-    si = i;
-    var s = segs[i];
-    $("nowTitle").textContent = s.label;
-    $("nowRange").textContent = fmt(s.start)+" – "+fmt(s.end)+"  ("+fmt(s.end-s.start)+")";
-    $("nowNote").textContent = s.passive ? "딕테이션 대상이 아닌 구간입니다." : "";
+  function pick(i,play){
+    si=i;
+    var s=segs[i];
+    $("nowTitle").textContent=s.label;
+    $("nowRange").textContent=fmt(s.start)+" – "+fmt(s.end)+"  ("+fmt(s.end-s.start)+")";
+    $("nowNote").textContent=s.passive?"딕테이션 대상이 아닌 구간입니다.":"";
     draw();
-    audio.currentTime = s.start;
+    hideScript();
+    audio.currentTime=s.start;
     if(play) audio.play().catch(function(){});
   }
 
-  $("btnBack").addEventListener("click", function(){
+  $("btnBack").addEventListener("click",function(){
     audio.pause();
     $("viewEp").classList.add("hidden");
     $("viewLib").classList.remove("hidden");
-    renderLib();
-    window.scrollTo(0,0);
+    renderLib(); window.scrollTo(0,0);
   });
 
-  /* ================= playback ================= */
+  /* ============ script ============ */
+  function hideScript(){
+    shown=false;
+    $("lines").classList.add("hidden");
+    $("lines").innerHTML="";
+    $("curtain").classList.remove("hidden");
+    $("btnHide").style.display="none";
+    $("curtainMsg").textContent = script.length
+      ? "딕테이션을 끝낸 뒤에 여세요."
+      : "스크립트가 아직 없습니다. 아래 “스크립트 넣기”에서 붙여넣으세요.";
+    $("btnReveal").style.display = script.length ? "" : "none";
+  }
 
-  audio.addEventListener("loadedmetadata", function(){ draw(); });
+  function showScript(){
+    if(!script.length || si<0) return;
+    var s=segs[si];
+    var part=script.filter(function(l){ return l.t>=s.start-0.6 && l.t<s.end; });
+    var box=$("lines"); box.innerHTML="";
 
-  audio.addEventListener("timeupdate", function(){
-    var dur = span();
-    $("tNow").textContent = fmt(audio.currentTime);
-    $("fill").style.width = (audio.currentTime/dur*100) + "%";
-    if(si < 0) return;
-    var s = segs[si];
-    if(audio.currentTime >= s.end){
-      if(looping) audio.currentTime = s.start;
-      else { audio.pause(); audio.currentTime = s.start; }
+    if(!part.length){
+      var p=document.createElement("div");
+      p.className="ln"; p.innerHTML='<span class="tx" style="color:var(--dim)">이 구간에 해당하는 대사가 없습니다.</span>';
+      box.appendChild(p);
+    }
+
+    part.forEach(function(l){
+      var b=document.createElement("button");
+      b.className="ln"; b.dataset.t=l.t;
+      var tm=document.createElement("span"); tm.className="tm"; tm.textContent=fmt(l.t);
+      var tx=document.createElement("span"); tx.className="tx"; tx.textContent=l.text;
+      b.appendChild(tm); b.appendChild(tx);
+      b.addEventListener("click",function(){
+        audio.currentTime=l.t;
+        audio.play().catch(function(){});
+      });
+      box.appendChild(b);
+    });
+
+    shown=true;
+    box.classList.remove("hidden");
+    $("curtain").classList.add("hidden");
+    $("btnHide").style.display="";
+  }
+
+  $("btnReveal").addEventListener("click",showScript);
+  $("btnHide").addEventListener("click",hideScript);
+
+  function markLine(){
+    if(!shown) return;
+    var t=audio.currentTime, best=null;
+    var els=$("lines").querySelectorAll(".ln[data-t]");
+    els.forEach(function(el){
+      var lt=parseFloat(el.dataset.t);
+      if(lt<=t+0.25) best=el;
+      el.classList.remove("at");
+    });
+    if(best) best.classList.add("at");
+  }
+
+  /* ============ playback ============ */
+  audio.addEventListener("loadedmetadata",function(){ draw(); });
+
+  audio.addEventListener("timeupdate",function(){
+    var dur=span();
+    $("tNow").textContent=fmt(audio.currentTime);
+    $("fill").style.width=(audio.currentTime/dur*100)+"%";
+    markLine();
+    if(si<0) return;
+    var s=segs[si];
+    if(audio.currentTime>=s.end){
+      if(looping) audio.currentTime=s.start;
+      else { audio.pause(); audio.currentTime=s.start; }
     }
   });
 
-  audio.addEventListener("play",  function(){ $("btnPlay").textContent = "일시정지"; });
-  audio.addEventListener("pause", function(){ $("btnPlay").textContent = "재생"; });
+  audio.addEventListener("play", function(){ $("btnPlay").textContent="일시정지"; });
+  audio.addEventListener("pause",function(){ $("btnPlay").textContent="재생"; });
 
   function toggle(){
-    if(!audio.src || si < 0) return;
+    if(!audio.src||si<0) return;
     if(audio.paused){
-      var s = segs[si];
-      if(audio.currentTime < s.start - 0.5 || audio.currentTime >= s.end - 0.05) audio.currentTime = s.start;
+      var s=segs[si];
+      if(audio.currentTime<s.start-0.5||audio.currentTime>=s.end-0.05) audio.currentTime=s.start;
       audio.play().catch(function(){});
     } else audio.pause();
   }
   function nudge(d){
-    if(si < 0) return;
-    var s = segs[si];
-    audio.currentTime = Math.min(s.end - 0.1, Math.max(s.start, audio.currentTime + d));
+    if(si<0) return;
+    var s=segs[si];
+    audio.currentTime=Math.min(s.end-0.1,Math.max(s.start,audio.currentTime+d));
   }
   function head(){
-    if(si < 0) return;
-    audio.currentTime = segs[si].start;
+    if(si<0) return;
+    audio.currentTime=segs[si].start;
     audio.play().catch(function(){});
   }
   function loop(){
-    looping = !looping;
-    var b = $("btnLoop");
-    b.classList.toggle("on", looping);
-    b.textContent = looping ? "반복 켜짐" : "반복 끄기";
+    looping=!looping;
+    var b=$("btnLoop");
+    b.classList.toggle("on",looping);
+    b.textContent=looping?"반복 켜짐":"반복 끄기";
   }
 
-  $("btnPlay").addEventListener("click", toggle);
-  $("btnBack5").addEventListener("click", function(){ nudge(-5); });
-  $("btnFwd5").addEventListener("click", function(){ nudge(5); });
-  $("btnHead").addEventListener("click", head);
-  $("btnLoop").addEventListener("click", loop);
+  $("btnPlay").addEventListener("click",toggle);
+  $("btnBack5").addEventListener("click",function(){ nudge(-5); });
+  $("btnFwd5").addEventListener("click",function(){ nudge(5); });
+  $("btnHead").addEventListener("click",head);
+  $("btnLoop").addEventListener("click",loop);
 
   function rate(r){
-    audio.playbackRate = r;
-    $("btnSlow").classList.toggle("on", r === 0.75);
-    $("btnNormal").classList.toggle("on", r === 1);
+    audio.playbackRate=r;
+    $("btnSlow").classList.toggle("on",r===0.75);
+    $("btnNormal").classList.toggle("on",r===1);
   }
-  $("btnSlow").addEventListener("click", function(){ rate(0.75); });
-  $("btnNormal").addEventListener("click", function(){ rate(1); });
+  $("btnSlow").addEventListener("click",function(){ rate(0.75); });
+  $("btnNormal").addEventListener("click",function(){ rate(1); });
 
-  $("track").addEventListener("click", function(e){
+  $("track").addEventListener("click",function(e){
     if(!audio.duration) return;
-    var r = this.getBoundingClientRect();
-    var t = (e.clientX - r.left)/r.width * audio.duration;
-    var hit = segs.findIndex(function(s){ return t >= s.start && t < s.end; });
-    if(hit !== -1 && hit !== si) pick(hit, false);
-    audio.currentTime = t;
+    var r=this.getBoundingClientRect();
+    var t=(e.clientX-r.left)/r.width*audio.duration;
+    var hit=segs.findIndex(function(s){ return t>=s.start && t<s.end; });
+    if(hit!==-1&&hit!==si) pick(hit,false);
+    audio.currentTime=t;
   });
 
-  document.addEventListener("keydown", function(e){
+  document.addEventListener("keydown",function(e){
     if(/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
     if($("viewEp").classList.contains("hidden")) return;
-    if(e.key === " "){ e.preventDefault(); toggle(); }
-    else if(e.key === "ArrowLeft"){ e.preventDefault(); nudge(-5); }
-    else if(e.key === "ArrowRight"){ e.preventDefault(); nudge(5); }
-    else if(e.key === "r" || e.key === "R") head();
-    else if(e.key === "l" || e.key === "L") loop();
+    if(e.key===" "){ e.preventDefault(); toggle(); }
+    else if(e.key==="ArrowLeft"){ e.preventDefault(); nudge(-5); }
+    else if(e.key==="ArrowRight"){ e.preventDefault(); nudge(5); }
+    else if(e.key==="r"||e.key==="R") head();
+    else if(e.key==="l"||e.key==="L") loop();
   });
 
-  /* ================= segment editing ================= */
-
-  function say(t, ok){
-    var m = $("msg"); m.textContent = t; m.className = "msg " + (ok?"ok":"bad");
-  }
+  /* ============ editing ============ */
+  function say(el,t,ok){ el.textContent=t; el.className="msg "+(ok?"ok":"bad"); }
 
   $("btnApply").addEventListener("click", async function(){
-    var text = $("inSegs").value.trim();
-    if(!text){ say("구간을 붙여넣어 주세요.", false); return; }
-    var r = parseSegs(text, audio.duration);
-    if(r.err){ say(r.err, false); return; }
+    var text=$("inSegs").value.trim();
+    if(!text){ say($("msg"),"구간을 붙여넣어 주세요.",false); return; }
+    var r=parseSegs(text,audio.duration);
+    if(r.err){ say($("msg"),r.err,false); return; }
+    segs=r.segs; cur.segs=segs; cur.csv=text;
+    try{ await put(cur); }catch(err){ say($("msg"),"저장하지 못했습니다.",false); }
+    si=-1; pick(firstActive(),false);
+    say($("msg"),segs.length+"개 구간으로 나눴습니다.",true);
+  });
 
-    segs = r.segs;
-    cur.segs = segs; cur.csv = text;
-    try { await put(cur); } catch(err){ say("저장하지 못했습니다. 이번 세션에서는 그대로 쓸 수 있습니다.", false); }
-
-    si = -1;
-    pick(firstActive(), false);
-    say(segs.length + "개 구간으로 나눴습니다.", true);
+  $("btnScript").addEventListener("click", async function(){
+    var text=$("inScript").value.trim();
+    if(!text){ say($("msgScr"),"스크립트를 붙여넣어 주세요.",false); return; }
+    var parsed=parseScript(text);
+    if(!parsed.length){
+      say($("msgScr"),"시간 표시를 찾지 못했습니다. 0:18 형식의 줄이 있는지 확인해 주세요.",false);
+      return;
+    }
+    script=parsed; cur.script=parsed; cur.scriptRaw=text;
+    try{ await put(cur); }catch(err){ say($("msgScr"),"저장하지 못했습니다.",false); }
+    hideScript();
+    say($("msgScr"),parsed.length+"줄을 읽었습니다.",true);
   });
 
   $("btnDelete").addEventListener("click", async function(){
-    audio.pause();
-    await remove(cur.id);
-    eps = await all();
-    eps.sort(function(a,b){ return a.day - b.day; });
+    audio.pause(); await remove(cur.id);
+    eps=await all(); eps.sort(function(a,b){return a.day-b.day;});
     $("viewEp").classList.add("hidden");
     $("viewLib").classList.remove("hidden");
-    renderLib();
-    window.scrollTo(0,0);
+    renderLib(); window.scrollTo(0,0);
   });
 
-  /* ================= boot ================= */
-
+  /* ============ boot ============ */
   (async function(){
-    try {
-      DB = await open();
-      eps = await all();
-      eps.sort(function(a,b){ return a.day - b.day; });
+    try{
+      DB=await open();
+      eps=await all(); eps.sort(function(a,b){return a.day-b.day;});
       renderLib();
-    } catch(err){
-      $("empty").textContent = "이 브라우저에서는 저장 기능을 쓸 수 없습니다. 파일은 열리지만 다음에 다시 넣어야 합니다.";
+    }catch(err){
+      $("empty").textContent="이 브라우저에서는 저장 기능을 쓸 수 없습니다.";
     }
   })();
 
